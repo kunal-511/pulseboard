@@ -1,0 +1,25 @@
+{{- if .Values.api.serviceMonitor.enabled }}
+# ServiceMonitor tells Prometheus Operator which pods to scrape.
+# Requires kube-prometheus-stack (or prometheus-operator) to be installed.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "pulseboard.api.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pulseboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+    # This label must match the Prometheus CR's serviceMonitorSelector.
+    # kube-prometheus-stack default: release=<prometheus-release-name>
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      {{- include "pulseboard.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.api.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.api.serviceMonitor.scrapeTimeout }}
+{{- end }}

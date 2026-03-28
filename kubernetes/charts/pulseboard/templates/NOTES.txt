@@ -1,0 +1,48 @@
+PulseBoard has been deployed!
+
+  Release : {{ .Release.Name }}
+  Namespace: {{ .Release.Namespace }}
+
+──────────────────────────────────────────────
+Access the application
+──────────────────────────────────────────────
+
+{{- if .Values.ingress.enabled }}
+  URL: http{{ if .Values.ingress.tls }}s{{ end }}://{{ .Values.ingress.host }}
+
+{{- else }}
+  Ingress is disabled. Use port-forward to access locally:
+
+  # Frontend
+  kubectl port-forward -n {{ .Release.Namespace }} \
+    svc/{{ include "pulseboard.frontend.fullname" . }} 3000:80
+
+  # API
+  kubectl port-forward -n {{ .Release.Namespace }} \
+    svc/{{ include "pulseboard.api.fullname" . }} 8080:8080
+
+  Then open http://localhost:3000
+{{- end }}
+
+──────────────────────────────────────────────
+Useful commands
+──────────────────────────────────────────────
+
+  # Check rollout status
+  kubectl rollout status deploy/{{ include "pulseboard.api.fullname" . }} -n {{ .Release.Namespace }}
+  kubectl rollout status deploy/{{ include "pulseboard.frontend.fullname" . }} -n {{ .Release.Namespace }}
+
+  # View API logs
+  kubectl logs -l app.kubernetes.io/component=api -n {{ .Release.Namespace }} -f
+
+  # Prometheus metrics (with port-forward active)
+  curl http://localhost:8080/metrics
+
+{{- if .Values.api.serviceMonitor.enabled }}
+
+  ServiceMonitor is enabled — Prometheus will scrape /metrics automatically.
+{{- else }}
+
+  ServiceMonitor is disabled. Set api.serviceMonitor.enabled=true after
+  installing kube-prometheus-stack to enable Prometheus scraping.
+{{- end }}

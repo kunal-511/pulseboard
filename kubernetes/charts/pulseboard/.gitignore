@@ -1,0 +1,2 @@
+# Downloaded chart tarballs — regenerated with: helm dependency update
+charts/*.tgz

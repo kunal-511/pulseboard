@@ -1,0 +1,9 @@
+# Compiled binary
+/api
+
+# Vendor directory (we use go modules, not vendor)
+vendor/
+
+# Test output
+*.out
+coverage.html

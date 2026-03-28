@@ -1,0 +1,38 @@
+# ── Dev overrides ─────────────────────────────────────────────
+# Low resources, single replica, debug-friendly.
+# Apply with: helm upgrade --install pulseboard . -f values.yaml -f values-dev.yaml
+
+api:
+  replicaCount: 1
+  image:
+    pullPolicy: Always      # always pull latest in dev
+  env:
+    LOG_LEVEL: "debug"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  autoscaling:
+    enabled: false
+
+frontend:
+  replicaCount: 1
+  image:
+    pullPolicy: Always
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: pulseboard.dev.local
+  tls: false
+
+postgresql:
+  enabled: true
+  auth:
+    password: dev-password
+  primary:
+    persistence:
+      size: 1Gi
