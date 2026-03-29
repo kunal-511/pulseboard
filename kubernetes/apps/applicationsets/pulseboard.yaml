@@ -49,7 +49,7 @@ spec:
       project: default
 
       source:
-        repoURL: https://github.com/<your-username>/pulseboard.git
+        repoURL: https://github.com/kunal-511/pulseboard.git
         targetRevision: main
         path: kubernetes/charts/pulseboard
         helm:
