@@ -14,7 +14,7 @@ serviceAccount:
 # ── API ────────────────────────────────────────────────────────
 api:
   image:
-    repository: pulseboard-api
+    repository: ghcr.io/kunal-511/pulseboard-api
     tag: "1.0.0"
     pullPolicy: IfNotPresent
 
@@ -80,7 +80,7 @@ api:
 # ── Frontend ───────────────────────────────────────────────────
 frontend:
   image:
-    repository: pulseboard-frontend
+    repository: ghcr.io/kunal-511/pulseboard-frontend
     tag: "1.0.0"
     pullPolicy: IfNotPresent
 
