@@ -44,9 +44,11 @@ ingress:
   tls: true
   tlsSecretName: pulseboard-tls
 
-# Use RDS in prod — disable the in-cluster postgres.
+# Using in-cluster postgres locally; switch to RDS (enabled: false) when deploying to EKS.
 postgresql:
-  enabled: false
+  enabled: true
+  auth:
+    password: prod-password
 
 externalDatabase:
   host: ""          # set to your RDS endpoint
