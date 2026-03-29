@@ -49,6 +49,8 @@ postgresql:
   enabled: true
   auth:
     password: prod-password
+  image:
+    pullPolicy: IfNotPresent
 
 externalDatabase:
   host: ""          # set to your RDS endpoint
