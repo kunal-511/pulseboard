@@ -129,33 +129,33 @@ ingress:
   tls: false
   tlsSecretName: pulseboard-tls
 
-# ── PostgreSQL (bitnami subchart) ──────────────────────────────
+# ── PostgreSQL ─────────────────────────────────────────────────
+# Uses the official postgres image — no external chart dependency.
 # Set enabled: false in prod and point externalDatabase at RDS.
 postgresql:
   enabled: true
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
   auth:
     username: pulseboard
     password: pulseboard   # overridden per-env; use External Secrets in prod
     database: pulseboard
-  primary:
-    persistence:
-      enabled: true
-      size: 1Gi
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 500m
-        memory: 256Mi
+  persistence:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
 
 # ── External database (used when postgresql.enabled=false) ─────
+# Point this at RDS when deploying to EKS.
 externalDatabase:
   host: ""          # e.g. my-rds.xxxx.rds.amazonaws.com
   port: 5432
   username: pulseboard
   database: pulseboard
-  # Password is read from a Secret — create it before installing:
-  #   kubectl create secret generic <release>-externaldb \
-  #     --from-literal=db-password=<password>
-  existingSecret: ""

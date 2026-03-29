@@ -33,8 +33,3 @@ postgresql:
   enabled: true
   auth:
     password: dev-password
-  primary:
-    persistence:
-      size: 1Gi
-  image:
-    pullPolicy: IfNotPresent
