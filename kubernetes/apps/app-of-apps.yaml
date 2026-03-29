@@ -1,0 +1,38 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# App-of-Apps — Bootstrap Application
+#
+# Apply this ONCE manually to seed ArgoCD:
+#   kubectl apply -f kubernetes/apps/app-of-apps.yaml -n argocd
+#
+# After that, ArgoCD watches this repo and manages everything else from Git.
+# You never need to manually apply another ArgoCD manifest again.
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-of-apps
+  namespace: argocd
+  # Cascade delete: removing this app removes all child apps too.
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    # Replace with your actual GitHub repo URL.
+    repoURL: https://github.com/kunal-511/pulseboard
+    targetRevision: main
+    # ArgoCD watches this directory for Application/ApplicationSet manifests.
+    path: kubernetes/apps
+
+  destination:
+    # Deploys child Applications onto the management cluster itself.
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true       # remove ArgoCD resources deleted from Git
+      selfHeal: true    # revert manual changes made outside Git
+    syncOptions:
+      - CreateNamespace=true

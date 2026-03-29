@@ -1,0 +1,94 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ApplicationSet — PulseBoard (dev + prod)
+#
+# This is discovered and applied automatically by the App-of-Apps above.
+# It generates one ArgoCD Application per environment using the list generator.
+#
+# To find your cluster server URLs:  argocd cluster list
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: pulseboard
+  namespace: argocd
+spec:
+  # Prevent accidental deletion of both environments at once.
+  ignoreApplicationDifferences:
+    - jsonPointers:
+        - /spec/source/targetRevision
+
+  generators:
+    - list:
+        elements:
+          - env: dev
+            # Replace with your actual dev cluster server URL (from argocd cluster list).
+            server: https://172.18.0.3:6443
+            namespace: dev
+            valuesFile: values-dev.yaml
+            replicaCount: "1"
+
+          - env: prod
+            # Replace with your actual prod cluster server URL (from argocd cluster list).
+            server: https://172.18.0.4:6443
+            namespace: prod
+            valuesFile: values-prod.yaml
+            replicaCount: "2"
+
+  template:
+    metadata:
+      # Generates: pulseboard-dev, pulseboard-prod
+      name: "pulseboard-{{env}}"
+      namespace: argocd
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      annotations:
+        # Useful for filtering in the ArgoCD UI.
+        app-environment: "{{env}}"
+
+    spec:
+      project: default
+
+      source:
+        repoURL: https://github.com/<your-username>/pulseboard.git
+        targetRevision: main
+        path: kubernetes/charts/pulseboard
+        helm:
+          # Layer base values + environment overrides.
+          valueFiles:
+            - values.yaml
+            - "{{valuesFile}}"
+          # Pass the image tag as a parameter so CI can override it
+          # without editing any values file (just --set api.image.tag=abc123).
+          parameters:
+            - name: api.image.tag
+              value: "1.0.0"
+            - name: frontend.image.tag
+              value: "1.0.0"
+
+      destination:
+        server: "{{server}}"
+        namespace: "{{namespace}}"
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          # Prevents ArgoCD from replacing the bitnami postgresql secret
+          # (which contains a generated password) on every sync.
+          - RespectIgnoreDifferences=true
+          - ServerSideApply=true
+
+      # Tell ArgoCD to ignore the postgresql secret being out of sync —
+      # bitnami mutates it at install time and ArgoCD would otherwise
+      # keep flagging it as drifted.
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas    # ignore if HPA has scaled this
+        - kind: Secret
+          name: "pulseboard-postgresql"
+          jsonPointers:
+            - /data
