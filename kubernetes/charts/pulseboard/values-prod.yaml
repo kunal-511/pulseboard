@@ -21,7 +21,7 @@ api:
     maxReplicas: 10
     targetCPUUtilizationPercentage: 70
   serviceMonitor:
-    enabled: true     # enable once kube-prometheus-stack is installed
+    enabled: false    # enable after kube-prometheus-stack is installed (observability phase)
 
 frontend:
   replicaCount: 2
