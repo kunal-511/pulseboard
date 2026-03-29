@@ -22,7 +22,7 @@ spec:
         elements:
           - env: dev
             # Replace with your actual dev cluster server URL (from argocd cluster list).
-            server: https://172.18.0.3:6443
+            server: https://172.18.0.2:6443
             namespace: dev
             valuesFile: values-dev.yaml
             replicaCount: "1"
