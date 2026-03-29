@@ -22,8 +22,10 @@ spec:
     # Replace with your actual GitHub repo URL.
     repoURL: https://github.com/kunal-511/pulseboard
     targetRevision: main
-    # ArgoCD watches this directory for Application/ApplicationSet manifests.
+    # ArgoCD watches this directory (and subdirs) for Application/ApplicationSet manifests.
     path: kubernetes/apps
+    directory:
+      recurse: true
 
   destination:
     # Deploys child Applications onto the management cluster itself.
