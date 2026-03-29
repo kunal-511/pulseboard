@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pulseboard.frontend.fullname" . }}-nginx
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "pulseboard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: frontend
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        # Proxy API calls to the API service using its Kubernetes DNS name.
+        location /api/ {
+            proxy_pass http://{{ include "pulseboard.api.fullname" . }}:{{ .Values.api.service.port }};
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        location /health {
+            proxy_pass http://{{ include "pulseboard.api.fullname" . }}:{{ .Values.api.service.port }};
+            proxy_set_header Host $host;
+        }
+
+        # SPA fallback
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        gzip on;
+        gzip_types text/plain text/css application/javascript application/json;
+        gzip_min_length 1024;
+    }

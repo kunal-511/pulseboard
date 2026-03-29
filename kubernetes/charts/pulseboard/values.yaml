@@ -116,8 +116,7 @@ frontend:
     runAsNonRoot: true
     runAsUser: 101        # nginx default user
     allowPrivilegeEscalation: false
-    capabilities:
-      drop: ["ALL"]
+    # readOnlyRootFilesystem omitted — nginx writes to /etc/nginx at startup
 
 # ── Ingress ────────────────────────────────────────────────────
 ingress:

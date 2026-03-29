@@ -17,6 +17,9 @@ spec:
       labels:
         {{- include "pulseboard.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: frontend
+      annotations:
+        # Restart frontend pods when nginx config changes.
+        checksum/config: {{ include (print $.Template.BasePath "/frontend/configmap.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "pulseboard.serviceAccountName" . }}
       containers:
@@ -36,13 +39,16 @@ spec:
           securityContext:
             {{- toYaml .Values.frontend.securityContext | nindent 12 }}
           volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
             - name: nginx-cache
               mountPath: /var/cache/nginx
             - name: nginx-run
               mountPath: /var/run
       volumes:
-        # nginx needs to write to these dirs at runtime; mount as emptyDir
-        # so the container filesystem stays read-only.
+        - name: nginx-config
+          configMap:
+            name: {{ include "pulseboard.frontend.fullname" . }}-nginx
         - name: nginx-cache
           emptyDir: {}
         - name: nginx-run
